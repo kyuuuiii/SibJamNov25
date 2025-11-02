@@ -16,17 +16,13 @@ public class GuaranteedSingleDrag : MonoBehaviour
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
         Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, 10f));
 
-        // Только когда нажимаем кнопку - проверяем попадание
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            // Самый надежный способ - проверять расстояние до объекта
             float distance = Vector2.Distance(transform.position, mouseWorldPos);
-            float pickDistance = 1.0f; // Расстояние для захвата
+            float pickDistance = 1.0f; 
 
-            // Если объект достаточно близко к курсору - захватываем его
             if (distance < pickDistance)
             {
-                // Дополнительная проверка через коллайдер
                 Collider2D hit = Physics2D.OverlapPoint(mouseWorldPos);
                 if (hit != null && hit.gameObject == this.gameObject)
                 {
@@ -38,8 +34,19 @@ public class GuaranteedSingleDrag : MonoBehaviour
 
         if (isDragging)
         {
-            // Перемещаем объект
             transform.position = new Vector3(mouseWorldPos.x, mouseWorldPos.y, transform.position.z);
+
+            if (Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                transform.Rotate(0, 0, 90);
+                Debug.Log($"Повернули {gameObject.name} на +90°");
+            }
+
+            if (Keyboard.current.eKey.wasPressedThisFrame)
+            {
+                transform.Rotate(0, 0, -90);
+                Debug.Log($"Повернули {gameObject.name} на -90°");
+            }
 
             if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
