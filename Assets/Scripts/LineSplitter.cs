@@ -38,7 +38,7 @@ public class LineSplitter : MonoBehaviour
 
         // 3. Фиксированный угол относительно входящего направления
         float angle = Vector2.SignedAngle(Vector2.right, incomingDirection);
-        float newAngle = angle + splitAngle;
+        float newAngle = angle + splitAngle; 
         return new Vector2(Mathf.Cos(newAngle * Mathf.Deg2Rad), Mathf.Sin(newAngle * Mathf.Deg2Rad));
     }
 
