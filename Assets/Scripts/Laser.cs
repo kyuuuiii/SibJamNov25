@@ -1,4 +1,4 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using System.Collections.Generic;
 
 public class Laser : MonoBehaviour
@@ -11,7 +11,7 @@ public class Laser : MonoBehaviour
     public float startOffset = 0.5f;
     public float lineLength = 5f;
 
-    // Для отслеживания состояния
+    // Р”Р»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёСЏ
     private bool isRefracted = false;
     private Vector2 collisionPoint;
     private Vector2 newEndPoint;
@@ -22,7 +22,6 @@ public class Laser : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
         laserCollider = GetComponent<EdgeCollider2D>();
 
-        // Если коллайдера нет - добавляем
         if (laserCollider == null)
         {
             laserCollider = gameObject.AddComponent<EdgeCollider2D>();
@@ -35,7 +34,6 @@ public class Laser : MonoBehaviour
 
     void Update()
     {
-        // Обновляем только если не преломлено
         if (!isRefracted)
         {
             UpdateLaser();
@@ -47,24 +45,24 @@ public class Laser : MonoBehaviour
     {
         if (isRefracted) return;
 
-        Debug.Log("Столкновение с: " + other.name);
+        Debug.Log("РЎС‚РѕР»РєРЅРѕРІРµРЅРёРµ СЃ: " + other.name);
 
-        // Получаем точку столкновения
+        // РџРѕР»СѓС‡Р°РµРј С‚РѕС‡РєСѓ СЃС‚РѕР»РєРЅРѕРІРµРЅРёСЏ
         collisionPoint = other.ClosestPoint(transform.position);
 
-        // Вычисляем новое направление (вниз)
+        // Р’С‹С‡РёСЃР»СЏРµРј РЅРѕРІРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ (РІРЅРёР·)
         Vector2 newDirection = Vector2.down;
 
-        // Вычисляем конечную точку в новом направлении
+        // Р’С‹С‡РёСЃР»СЏРµРј РєРѕРЅРµС‡РЅСѓСЋ С‚РѕС‡РєСѓ РІ РЅРѕРІРѕРј РЅР°РїСЂР°РІР»РµРЅРёРё
         newEndPoint = collisionPoint + newDirection * lineLength;
 
-        // Обновляем LineRenderer с тремя точками
+        // РћР±РЅРѕРІР»СЏРµРј LineRenderer СЃ С‚СЂРµРјСЏ С‚РѕС‡РєР°РјРё
         lineRenderer.positionCount = 3;
         lineRenderer.SetPosition(0, lineStartPoint);
         lineRenderer.SetPosition(1, collisionPoint);
         lineRenderer.SetPosition(2, newEndPoint);
 
-        // Обновляем коллайдер для новой части линии
+        // РћР±РЅРѕРІР»СЏРµРј РєРѕР»Р»Р°Р№РґРµСЂ РґР»СЏ РЅРѕРІРѕР№ С‡Р°СЃС‚Рё Р»РёРЅРёРё
         UpdateColliderAfterCollision();
 
         isRefracted = true;
@@ -74,10 +72,9 @@ public class Laser : MonoBehaviour
     {
         if (isRefracted)
         {
-            Debug.Log("Выход из коллайдера: " + other.name);
+            Debug.Log("Р’С‹С…РѕРґ РёР· РєРѕР»Р»Р°Р№РґРµСЂР°: " + other.name);
             isRefracted = false;
 
-            // Возвращаем линию к исходному состоянию
             UpdateLaser();
             UpdateCollider();
         }
@@ -98,7 +95,6 @@ public class Laser : MonoBehaviour
 
     void UpdateCollider()
     {
-        // Исправленный синтаксис для EdgeCollider2D
         List<Vector2> colliderPoints = new List<Vector2>();
         colliderPoints.Add(lineStartPoint);
         colliderPoints.Add(lineEndPoint);
@@ -108,7 +104,6 @@ public class Laser : MonoBehaviour
 
     void UpdateColliderAfterCollision()
     {
-        // Исправленный синтаксис для EdgeCollider2D
         List<Vector2> colliderPoints = new List<Vector2>();
         colliderPoints.Add(collisionPoint);
         colliderPoints.Add(newEndPoint);

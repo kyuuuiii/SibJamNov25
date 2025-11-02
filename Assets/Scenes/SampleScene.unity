@@ -256,11 +256,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &576692497 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9132090985831745993, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+  m_PrefabInstance: {fileID: 2704792936403384168}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &576692501 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5529444984872505954, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
   m_PrefabInstance: {fileID: 2704792936403384168}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &576692502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 576692497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f4d7cb9f35eae46872535f86ffa4a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Laser
+  linePrefab: {fileID: 576692497}
+  startOffset: 3.56
+  lineLength: 5
+--- !u!50 &576692503
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 576692497}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,6 +542,7 @@ GameObject:
   - component: {fileID: 1880316193}
   - component: {fileID: 1880316192}
   - component: {fileID: 1880316191}
+  - component: {fileID: 1880316195}
   m_Layer: 8
   m_Name: LaserIn
   m_TagString: Untagged
@@ -509,7 +557,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1880316190}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca475d1f7739a204fa7ffefaa7697256, type: 3}
   m_Name: 
@@ -547,7 +595,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -636,6 +684,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1880316195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1880316190}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f4d7cb9f35eae46872535f86ffa4a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Laser
+  linePrefab: {fileID: 576692497}
+  startOffset: 0.5
+  lineLength: 5
 --- !u!1001 &2704792936403384168
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -644,6 +707,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1702753317}
     m_Modifications:
+    - target: {fileID: 3066454016586800031, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+      propertyPath: m_Size.x
+      value: 5.7566953
+      objectReference: {fileID: 0}
+    - target: {fileID: 3066454016586800031, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+      propertyPath: m_Offset.x
+      value: 3.038921
+      objectReference: {fileID: 0}
     - target: {fileID: 5529444984872505954, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -684,6 +755,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6579161261391233089, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6579161261391233089, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+      propertyPath: startOffset
+      value: 3.5
+      objectReference: {fileID: 0}
     - target: {fileID: 9132090985831745993, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
       propertyPath: m_Name
       value: Laser
@@ -691,7 +770,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9132090985831745993, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 576692502}
+    - targetCorrespondingSourceObject: {fileID: 9132090985831745993, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 576692503}
   m_SourcePrefab: {fileID: 100100000, guid: 13a2471ef79889f45b6d40336f790b7f, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
