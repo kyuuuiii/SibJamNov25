@@ -1,12 +1,14 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(LineRenderer))]
-public class RaycastBeam2D : MonoBehaviour
+public class RaycastBeam2D : MonoBehaviour, ILaserSource
 {
   [Header("Raycast Settings")]
   public float rayDistance = 250f;
   public string targetTag = "part";
-  public LayerMask layerMask = -1; // Все слои по умолчанию
+  public string reflectorTag = "Reflector";
+  public LayerMask layerMask = -1;
 
   [Header("Line Renderer Settings")]
   public Material lineMaterial;
@@ -17,19 +19,16 @@ public class RaycastBeam2D : MonoBehaviour
   private LineRenderer lineRenderer;
   private Vector3 hitPoint;
   private bool hasHit;
+  private List<LaserReflector> currentFrameReflectors = new List<LaserReflector>();
 
   void Reset()
   {
-    // Автоматическая настройка при добавлении компонента
     SetupLineRendererInEditor();
   }
 
   void Start()
   {
-    // Получаем ссылку на Line Renderer
     lineRenderer = GetComponent<LineRenderer>();
-
-    // Включаем Line Renderer при старте игры
     if (lineRenderer != null)
     {
       lineRenderer.enabled = true;
@@ -38,43 +37,60 @@ public class RaycastBeam2D : MonoBehaviour
 
   void Update()
   {
+    // Сначала деактивируем все рефлекторы, которые были активны в предыдущем кадре
+    DeactivateAllReflectors();
+
+    // Затем выполняем новый raycast
     ShootRaycast2D();
     UpdateLineRenderer();
   }
 
   void ShootRaycast2D()
   {
-    // Получаем направление вперед в 2D пространстве
-    Vector2 direction = transform.right; // В 2D обычно используют right вместо forward
-
-    // Выстреливаем луч в 2D
+    Vector2 direction = transform.right;
     RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, layerMask);
 
-    // Проверяем попадание
+    currentFrameReflectors.Clear();
+
     if (hit.collider != null)
     {
-      Debug.Log("Попал");
-      // Проверяем тег объекта
-      if (hit.collider.CompareTag(targetTag))
+      hitPoint = hit.point;
+
+      if (hit.collider.CompareTag(reflectorTag))
       {
-        Debug.Log("Попал по тегу");
-        hitPoint = hit.point;
+        LaserReflector reflector = hit.collider.GetComponent<LaserReflector>();
+        if (reflector != null)
+        {
+          reflector.ActivateReflector(this, hit.point, direction, hit.normal);
+          currentFrameReflectors.Add(reflector);
+          hasHit = true;
+        }
+      }
+      else if (hit.collider.CompareTag(targetTag))
+      {
         hasHit = true;
       }
       else
       {
-        Debug.Log("Попал не по тегу");
-        // Попадание есть, но не в целевой тег - используем точку попадания
-        hitPoint = hit.point;
         hasHit = false;
       }
     }
     else
     {
-      Debug.Log("Не попал");
-      // Попадания нет - используем максимальную дистанцию
       hitPoint = transform.position + (Vector3)direction * rayDistance;
       hasHit = false;
+    }
+  }
+
+  void DeactivateAllReflectors()
+  {
+    // Деактивируем все рефлекторы, которые не попали под луч в этом кадре
+    foreach (var reflector in FindObjectsOfType<LaserReflector>())
+    {
+      if (!currentFrameReflectors.Contains(reflector))
+      {
+        reflector.DeactivateReflector();
+      }
     }
   }
 
@@ -82,12 +98,10 @@ public class RaycastBeam2D : MonoBehaviour
   {
     if (lineRenderer == null) return;
 
-    // Всегда обновляем позиции линии
     lineRenderer.enabled = true;
     lineRenderer.SetPosition(0, transform.position);
     lineRenderer.SetPosition(1, hitPoint);
 
-    // Меняем цвет в зависимости от попадания в целевой объект
     if (hasHit)
     {
       lineRenderer.startColor = hitColor;
@@ -100,7 +114,6 @@ public class RaycastBeam2D : MonoBehaviour
     }
   }
 
-  // Метод для настройки в редакторе
   [ContextMenu("Setup Line Renderer")]
   void SetupLineRendererInEditor()
   {
@@ -111,7 +124,6 @@ public class RaycastBeam2D : MonoBehaviour
       lineRenderer = gameObject.AddComponent<LineRenderer>();
     }
 
-    // Настройка Line Renderer
     lineRenderer.material = lineMaterial;
     lineRenderer.startColor = lineColor;
     lineRenderer.endColor = lineColor;
@@ -121,7 +133,6 @@ public class RaycastBeam2D : MonoBehaviour
     lineRenderer.useWorldSpace = true;
     lineRenderer.enabled = true;
 
-    // Устанавливаем начальные позиции
     Vector3 endPoint = transform.position + transform.right * rayDistance;
     lineRenderer.SetPosition(0, transform.position);
     lineRenderer.SetPosition(1, endPoint);
@@ -132,42 +143,34 @@ public class RaycastBeam2D : MonoBehaviour
 #endif
   }
 
-  // Визуализация луча в редакторе
+  // Реализация интерфейса ILaserSource
+  public bool IsSourceActive()
+  {
+    return isActiveAndEnabled;
+  }
+
+  public Vector3 GetSourcePosition()
+  {
+    return transform.position;
+  }
+
   void OnDrawGizmosSelected()
   {
     Vector2 direction = transform.right;
-
     Gizmos.color = Color.blue;
     Gizmos.DrawRay(transform.position, direction * rayDistance);
 
-    // Показываем точку попадания в редакторе во время игры
     if (Application.isPlaying)
     {
       Gizmos.color = hasHit ? Color.green : Color.red;
       Gizmos.DrawWireSphere(hitPoint, 0.2f);
     }
   }
+}
 
-  // Методы для получения информации о луче
-  public Vector3 GetHitPoint()
-  {
-    return hitPoint;
-  }
-
-  public bool HasHitTarget()
-  {
-    return hasHit;
-  }
-
-  public float GetCurrentBeamLength()
-  {
-    return Vector3.Distance(transform.position, hitPoint);
-  }
-
-  // Дополнительный метод для получения информации о попадании
-  public RaycastHit2D GetLastHitInfo()
-  {
-    Vector2 direction = transform.right;
-    return Physics2D.Raycast(transform.position, direction, rayDistance, layerMask);
-  }
+// Интерфейс для всех источников лазера
+public interface ILaserSource
+{
+  bool IsSourceActive();
+  Vector3 GetSourcePosition();
 }
