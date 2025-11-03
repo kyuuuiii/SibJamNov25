@@ -39,19 +39,19 @@ public class GuaranteedSingleDrag : MonoBehaviour
             if (Keyboard.current.qKey.wasPressedThisFrame)
             {
                 transform.Rotate(0, 0, 90);
-                Debug.Log($"Повернули {gameObject.name} на +90°");
+                //Debug.Log($"Повернули {gameObject.name} на +90°");
             }
 
             if (Keyboard.current.eKey.wasPressedThisFrame)
             {
                 transform.Rotate(0, 0, -90);
-                Debug.Log($"Повернули {gameObject.name} на -90°");
+                //Debug.Log($"Повернули {gameObject.name} на -90°");
             }
 
             if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
                 isDragging = false;
-                Debug.Log($"Отпустили: {gameObject.name}");
+                //Debug.Log($"Отпустили: {gameObject.name}");
             }
         }
     }

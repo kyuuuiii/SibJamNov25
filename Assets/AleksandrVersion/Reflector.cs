@@ -4,217 +4,224 @@ using System.Collections.Generic;
 [RequireComponent(typeof(LineRenderer))]
 public class LaserReflector : MonoBehaviour, ILaserSource
 {
-  [Header("Reflection Settings")]
-  public bool reflectUp = true;
+    [Header("Reflection Settings")]
+    public bool reflectUp = true;
 
-  [Header("Visual Settings")]
-  public Color reflectionColor = Color.blue;
-  public float lineWidth = 0.05f;
+    [Header("Visual Settings")]
+    public Color reflectionColor = Color.blue;
+    public float lineWidth = 0.05f;
 
-  public LineRenderer lineRenderer;
-  public bool isActive = false;
-  public Vector2 reflectionPoint;
-  public Vector2 incomingDirection;
-  [SerializeField] public ILaserSource source;
-  public List<LaserReflector> currentChildReflectors = new List<LaserReflector>();
+    public LineRenderer lineRenderer;
+    public bool isActive = false;
+    public Vector2 reflectionPoint;
+    public Vector2 incomingDirection;
+    [SerializeField] public ILaserSource source;
+    public List<LaserReflector> currentChildReflectors = new List<LaserReflector>();
 
-  void Start()
-  {
-    InitializeLineRenderer();
-    lineRenderer.enabled = false;
-  }
+    private Vector2 currentSurfaceNormal; // Сохраняем нормаль поверхности
 
-  void Update()
-  {
-    if (!isActive) return;
-
-    // Проверяем, получаем ли мы еще луч от источника
-    if (!IsReceivingBeamFromSource())
+    void Start()
     {
-      DeactivateReflector();
-      return;
+        InitializeLineRenderer();
+        lineRenderer.enabled = false;
     }
 
-    UpdateReflectionBeam();
-  }
-
-  bool IsReceivingBeamFromSource()
-  {
-    if (source == null) return false;
-
-    // Проверяем луч от источника до этого рефлектора
-    Vector2 directionToReflector = ((Vector2)transform.position - (Vector2)source.GetSourcePosition()).normalized;
-    float distance = Vector2.Distance(source.GetSourcePosition(), transform.position);
-
-    RaycastHit2D hit = Physics2D.Raycast(source.GetSourcePosition(), directionToReflector, distance);
-
-    // Если луч прерван другим объектом до достижения этого рефлектора
-    if (hit.collider != null && hit.collider.gameObject != gameObject)
+    void Update()
     {
-      return false;
-    }
+        if (!isActive) return;
 
-    return true;
-  }
-
-  public void ActivateReflector(ILaserSource newSource, Vector2 hitPoint, Vector2 incomingDir, Vector2 surfaceNormal)
-  {
-    source = newSource;
-    reflectionPoint = hitPoint;
-    incomingDirection = incomingDir;
-    isActive = true;
-
-    if (lineRenderer != null)
-    {
-      lineRenderer.enabled = true;
-    }
-  }
-
-  public void DeactivateReflector()
-  {
-    if (!isActive) return;
-
-    isActive = false;
-    source = null;
-
-    // Деактивируем все дочерние рефлекторы
-    foreach (var reflector in currentChildReflectors)
-    {
-      if (reflector != null)
-      {
-        reflector.DeactivateReflector();
-      }
-    }
-    currentChildReflectors.Clear();
-
-    if (lineRenderer != null)
-    {
-      lineRenderer.enabled = false;
-    }
-  }
-
-  void UpdateReflectionBeam()
-  {
-    if (!isActive || lineRenderer == null) return;
-
-    Vector2 reflectionDirection = CalculateReflectionDirection();
-
-    // Выстреливаем луч из точки попадания
-    RaycastHit2D hit = Physics2D.Raycast(reflectionPoint + reflectionDirection * 0.1f, reflectionDirection, 250f);
-
-    Vector2 endPoint;
-    bool hitReflector = false;
-
-    if (hit.collider != null)
-    {
-      endPoint = hit.point;
-
-      // Активируем другие отражатели
-      if (hit.collider.CompareTag("Reflector"))
-      {
-        LaserReflector otherReflector = hit.collider.GetComponent<LaserReflector>();
-        if (otherReflector != null && otherReflector != this)
+        // Проверяем, получаем ли мы еще луч от источника
+        if (!IsReceivingBeamFromSource())
         {
-          otherReflector.ActivateReflector(this, hit.point, reflectionDirection, hit.normal);
-
-          // Сохраняем ссылку на активированный рефлектор
-          if (!currentChildReflectors.Contains(otherReflector))
-          {
-            currentChildReflectors.Add(otherReflector);
-          }
-          hitReflector = true;
+            DeactivateReflector();
+            return;
         }
-      }
-    }
-    else
-    {
-      endPoint = reflectionPoint + reflectionDirection * 250f;
+
+        UpdateReflectionBeam();
     }
 
-    // Деактивируем рефлекторы, которые больше не попадают под луч
-    if (!hitReflector)
+    bool IsReceivingBeamFromSource()
     {
-      foreach (var reflector in currentChildReflectors)
-      {
-        if (reflector != null)
+        if (source == null) return false;
+
+        // Проверяем луч от источника до этого рефлектора
+        Vector2 directionToReflector = ((Vector2)transform.position - (Vector2)source.GetSourcePosition()).normalized;
+        float distance = Vector2.Distance(source.GetSourcePosition(), transform.position);
+
+        RaycastHit2D hit = Physics2D.Raycast(source.GetSourcePosition(), directionToReflector, distance);
+
+        // Если луч прерван другим объектом до достижения этого рефлектора
+        if (hit.collider != null && hit.collider.gameObject != gameObject)
         {
-          reflector.DeactivateReflector();
+            return false;
         }
-      }
-      currentChildReflectors.Clear();
+
+        return true;
     }
 
-    // Обновляем Line Renderer
-    lineRenderer.SetPosition(0, reflectionPoint);
-    lineRenderer.SetPosition(1, endPoint);
-  }
-
-  Vector2 CalculateReflectionDirection()
-  {
-    float dotRight = Vector2.Dot(incomingDirection, Vector2.right);
-    float dotLeft = Vector2.Dot(incomingDirection, Vector2.left);
-    float dotUp = Vector2.Dot(incomingDirection, Vector2.up);
-    float dotDown = Vector2.Dot(incomingDirection, Vector2.down);
-
-    bool fromLeft = dotRight > 0.7f;
-    bool fromRight = dotLeft > 0.7f;
-    bool fromBottom = dotUp > 0.7f;
-    bool fromTop = dotDown > 0.7f;
-
-    if (fromLeft || fromRight)
+    public void ActivateReflector(ILaserSource newSource, Vector2 hitPoint, Vector2 incomingDir, Vector2 surfaceNormal)
     {
-      return reflectUp ? Vector2.up : Vector2.down;
+        source = newSource;
+        reflectionPoint = hitPoint;
+        incomingDirection = incomingDir;
+        currentSurfaceNormal = surfaceNormal; // Сохраняем переданную нормаль
+        isActive = true;
+
+        if (lineRenderer != null)
+        {
+            lineRenderer.enabled = true;
+        }
+
+        UpdateReflectionBeam();
     }
-    else if (fromBottom || fromTop)
+
+    public void DeactivateReflector()
     {
-      return reflectUp ? Vector2.right : Vector2.left;
+        if (!isActive) return;
+
+        isActive = false;
+        source = null;
+
+        // Деактивируем все дочерние рефлекторы
+        foreach (var reflector in currentChildReflectors)
+        {
+            if (reflector != null)
+            {
+                reflector.DeactivateReflector();
+            }
+        }
+        currentChildReflectors.Clear();
+
+        if (lineRenderer != null)
+        {
+            lineRenderer.enabled = false;
+        }
     }
 
-    return Vector2.up;
-  }
-
-  void InitializeLineRenderer()
-  {
-    lineRenderer = GetComponent<LineRenderer>();
-
-    if (lineRenderer == null)
+    void UpdateReflectionBeam()
     {
-      lineRenderer = gameObject.AddComponent<LineRenderer>();
+        if (!isActive || lineRenderer == null) return;
+
+        Vector2 reflectionDirection = CalculateReflectionDirection();
+
+        // Выстреливаем луч из точки попадания
+        RaycastHit2D hit = Physics2D.Raycast(reflectionPoint + reflectionDirection * 0.1f, reflectionDirection, 250f);
+
+        Vector2 endPoint;
+        bool hitReflector = false;
+
+        if (hit.collider != null)
+        {
+            endPoint = hit.point;
+
+            // Активируем другие отражатели
+            if (hit.collider.CompareTag("Reflector"))
+            {
+                LaserReflector otherReflector = hit.collider.GetComponent<LaserReflector>();
+                if (otherReflector != null && otherReflector != this)
+                {
+                    otherReflector.ActivateReflector(this, hit.point, reflectionDirection, hit.normal);
+
+                    // Сохраняем ссылку на активированный рефлектор
+                    if (!currentChildReflectors.Contains(otherReflector))
+                    {
+                        currentChildReflectors.Add(otherReflector);
+                    }
+                    hitReflector = true;
+                }
+            }
+        }
+        else
+        {
+            endPoint = reflectionPoint + reflectionDirection * 250f;
+        }
+
+        // Деактивируем рефлекторы, которые больше не попадают под луч
+        if (!hitReflector)
+        {
+            foreach (var reflector in currentChildReflectors)
+            {
+                if (reflector != null)
+                {
+                    reflector.DeactivateReflector();
+                }
+            }
+            currentChildReflectors.Clear();
+        }
+
+        // Обновляем Line Renderer
+        lineRenderer.SetPosition(0, reflectionPoint);
+        lineRenderer.SetPosition(1, endPoint);
     }
 
-    lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-    lineRenderer.startColor = reflectionColor;
-    lineRenderer.endColor = reflectionColor;
-    lineRenderer.startWidth = lineWidth;
-    lineRenderer.endWidth = lineWidth;
-    lineRenderer.positionCount = 2;
-    lineRenderer.useWorldSpace = true;
-  }
-
-  // Реализация интерфейса ILaserSource
-  public bool IsSourceActive()
-  {
-    return isActive && source != null && source.IsSourceActive();
-  }
-
-  public Vector3 GetSourcePosition()
-  {
-    return reflectionPoint;
-  }
-
-  void OnDrawGizmos()
-  {
-    Gizmos.color = Color.yellow;
-    Gizmos.DrawWireCube(transform.position, Vector3.one * 0.3f);
-
-    if (isActive && Application.isPlaying)
+    Vector2 CalculateReflectionDirection()
     {
-      Gizmos.color = Color.cyan;
-      Gizmos.DrawSphere(reflectionPoint, 0.1f);
+        // Используем сохраненную нормаль поверхности для расчета отражения
+        Vector2 reflectionDirection = Vector2.Reflect(incomingDirection, currentSurfaceNormal).normalized;
 
-      Vector2 reflectionDir = CalculateReflectionDirection();
-      Gizmos.color = reflectionColor;
-      Gizmos.DrawRay(reflectionPoint, reflectionDir * 2f);
+        // Если нужно инвертировать направление (старая логика reflectUp)
+        if (!reflectUp)
+        {
+            // Для обратного направления можно отразить еще раз относительно другой оси
+            // или использовать другую логику в зависимости от нужного поведения
+            reflectionDirection = Vector2.Reflect(reflectionDirection, GetPerpendicularNormal());
+        }
+
+        return reflectionDirection;
     }
-  }
+
+    Vector2 GetPerpendicularNormal()
+    {
+        // Получаем перпендикулярную нормаль (повернута на 90 градусов)
+        return new Vector2(-currentSurfaceNormal.y, currentSurfaceNormal.x);
+    }
+
+    void InitializeLineRenderer()
+    {
+        lineRenderer = GetComponent<LineRenderer>();
+
+        if (lineRenderer == null)
+        {
+            lineRenderer = gameObject.AddComponent<LineRenderer>();
+        }
+
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = reflectionColor;
+        lineRenderer.endColor = reflectionColor;
+        lineRenderer.startWidth = lineWidth;
+        lineRenderer.endWidth = lineWidth;
+        lineRenderer.positionCount = 2;
+        lineRenderer.useWorldSpace = true;
+    }
+
+    // Реализация интерфейса ILaserSource
+    public bool IsSourceActive()
+    {
+        return isActive && source != null && source.IsSourceActive();
+    }
+
+    public Vector3 GetSourcePosition()
+    {
+        return reflectionPoint;
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(transform.position, Vector3.one * 0.3f);
+
+        if (isActive && Application.isPlaying)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(reflectionPoint, 0.1f);
+
+            // Рисуем нормаль поверхности
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(reflectionPoint, currentSurfaceNormal * 1f);
+
+            Vector2 reflectionDir = CalculateReflectionDirection();
+            Gizmos.color = reflectionColor;
+            Gizmos.DrawRay(reflectionPoint, reflectionDir * 2f);
+        }
+    }
 }
