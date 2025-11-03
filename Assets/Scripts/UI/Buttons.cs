@@ -38,4 +38,9 @@ public class Buttons : MonoBehaviour
     {
         SceneManager.LoadScene(0);
     }
+    public void Restart()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentSceneName);
+    }
 }

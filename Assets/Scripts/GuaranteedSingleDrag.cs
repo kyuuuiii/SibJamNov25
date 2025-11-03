@@ -19,7 +19,7 @@ public class GuaranteedSingleDrag : MonoBehaviour
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             float distance = Vector2.Distance(transform.position, mouseWorldPos);
-            float pickDistance = 1.0f; 
+            float pickDistance = 1.0f;
 
             if (distance < pickDistance)
             {
