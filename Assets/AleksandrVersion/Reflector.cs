@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
 public class LaserReflector : MonoBehaviour, ILaserSource
@@ -17,8 +17,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
     public Vector2 incomingDirection;
     [SerializeField] public ILaserSource source;
     public List<LaserReflector> currentChildReflectors = new List<LaserReflector>();
-
-    private Vector2 currentSurfaceNormal; // Сохраняем нормаль поверхности
 
     void Start()
     {
@@ -64,7 +62,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
         source = newSource;
         reflectionPoint = hitPoint;
         incomingDirection = incomingDir;
-        currentSurfaceNormal = surfaceNormal; // Сохраняем переданную нормаль
         isActive = true;
 
         if (lineRenderer != null)
@@ -72,6 +69,7 @@ public class LaserReflector : MonoBehaviour, ILaserSource
             lineRenderer.enabled = true;
         }
 
+        // Добавляем этот вызов
         UpdateReflectionBeam();
     }
 
@@ -156,24 +154,30 @@ public class LaserReflector : MonoBehaviour, ILaserSource
 
     Vector2 CalculateReflectionDirection()
     {
-        // Используем сохраненную нормаль поверхности для расчета отражения
-        Vector2 reflectionDirection = Vector2.Reflect(incomingDirection, currentSurfaceNormal).normalized;
+        // Преобразуем входящее направление в локальные координаты объекта
+        Vector2 localIncoming = transform.InverseTransformDirection(incomingDirection);
 
-        // Если нужно инвертировать направление (старая логика reflectUp)
-        if (!reflectUp)
+        // Определяем с какой стороны приходит луч в локальных координатах
+        float absX = Mathf.Abs(localIncoming.x);
+        float absY = Mathf.Abs(localIncoming.y);
+
+        Vector2 localReflectionDirection = Vector2.zero;
+
+        if (absX > absY)
         {
-            // Для обратного направления можно отразить еще раз относительно другой оси
-            // или использовать другую логику в зависимости от нужного поведения
-            reflectionDirection = Vector2.Reflect(reflectionDirection, GetPerpendicularNormal());
+            // Луч приходит слева/справа - отражаем вверх/вниз
+            localReflectionDirection = reflectUp ? Vector2.up : Vector2.down;
+        }
+        else
+        {
+            // Луч приходит сверху/снизу - отражаем влево/вправо
+            localReflectionDirection = reflectUp ? Vector2.right : Vector2.left;
         }
 
-        return reflectionDirection;
-    }
+        // Преобразуем направление отражения обратно в мировые координаты
+        Vector2 worldReflectionDirection = transform.TransformDirection(localReflectionDirection);
 
-    Vector2 GetPerpendicularNormal()
-    {
-        // Получаем перпендикулярную нормаль (повернута на 90 градусов)
-        return new Vector2(-currentSurfaceNormal.y, currentSurfaceNormal.x);
+        return worldReflectionDirection.normalized;
     }
 
     void InitializeLineRenderer()
@@ -214,10 +218,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawSphere(reflectionPoint, 0.1f);
-
-            // Рисуем нормаль поверхности
-            Gizmos.color = Color.red;
-            Gizmos.DrawRay(reflectionPoint, currentSurfaceNormal * 1f);
 
             Vector2 reflectionDir = CalculateReflectionDirection();
             Gizmos.color = reflectionColor;
