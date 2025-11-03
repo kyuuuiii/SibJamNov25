@@ -1,16 +1,41 @@
 using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class CanvasSceneSwitch : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public float fadeSpeed = 1f;
+    public int sceneNumber = 0;
+    private CanvasGroup canvasGroup;
+
     void Start()
     {
-        
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        canvasGroup.alpha = 0f;
+        StartCoroutine(FadeAndSwitchScene());
     }
 
-    // Update is called once per frame
-    void Update()
+    IEnumerator FadeAndSwitchScene()
     {
-        
+        float timer = 0f;
+
+        while (timer < 1f)
+        {
+            timer += Time.deltaTime * fadeSpeed;
+            canvasGroup.alpha = Mathf.Clamp01(timer);
+            yield return null;
+        }
+
+        canvasGroup.alpha = 1f;
+
+        yield return new WaitForSeconds(1f);
+
+        SceneManager.LoadScene(sceneNumber);
     }
 }

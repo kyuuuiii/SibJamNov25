@@ -61,7 +61,7 @@ public class DirectionalLaserReceiver : MonoBehaviour
             if (absoluteSolver != null)
             {
                 absoluteSolver.IncreaseProgress();
-                Debug.Log($"Прогресс увеличен через приемник. Текущий прогресс: {absoluteSolver.currentProgress}");
+                //Debug.Log($"Прогресс увеличен через приемник. Текущий прогресс: {absoluteSolver.currentProgress}");
             }
 
             UpdateVisuals();
@@ -76,7 +76,7 @@ public class DirectionalLaserReceiver : MonoBehaviour
     public void OnLaserHit(Vector2 hitPoint, Vector2 laserDirection, ILaserSource source)
     {
         isActivated = true;
-        Debug.Log("Луч попал в приемник!");
+        //Debug.Log("Луч попал в приемник!");
     }
 
     private void UpdateVisuals()
@@ -89,7 +89,7 @@ public class DirectionalLaserReceiver : MonoBehaviour
 
     private void OnActivated()
     {
-        Debug.Log($"{gameObject.name} activated by laser! Прогресс увеличен");
+        //Debug.Log($"{gameObject.name} activated by laser! Прогресс увеличен");
     }
 
     void OnDrawGizmosSelected()
