@@ -1398,6 +1398,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3570525139841889277, guid: aef7a74fe46ca1641b4114569ec5d564, type: 3}
+      propertyPath: minDistance
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3570525139841889277, guid: aef7a74fe46ca1641b4114569ec5d564, type: 3}
+      propertyPath: collisionLayers.m_Bits
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3570525139841889277, guid: aef7a74fe46ca1641b4114569ec5d564, type: 3}
       propertyPath: minDistanceToReceivers
       value: 3
       objectReference: {fileID: 0}
@@ -1754,7 +1762,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1805269582}
   - component: {fileID: 1805269581}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: bgwithframe_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
