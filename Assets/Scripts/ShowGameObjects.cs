@@ -7,21 +7,19 @@ public class ShowGameObjects : MonoBehaviour
     {
         public GameObject gameObject;
         public bool shouldBeActive;
-        public int requiredProgressLevel; // Уровень прогресса для активации
+        public int requiredProgressLevel;
     }
 
     public GameObjectData[] gameObjectsData;
-    public int currentProgress = 0; // Текущий уровень прогресса
+    public int currentProgress = 0;
 
     void Start()
     {
-        // Инициализируем объекты согласно их начальным настройкам
         UpdateGameObjects();
     }
 
     void Update()
     {
-        // Постоянно обновляем состояние объектов
         UpdateGameObjects();
     }
 
@@ -31,7 +29,6 @@ public class ShowGameObjects : MonoBehaviour
         {
             if (data.gameObject != null)
             {
-                // Активируем объект если достигнут нужный уровень прогресса
                 bool shouldActivate = data.shouldBeActive && currentProgress >= data.requiredProgressLevel;
                 if (data.gameObject.activeSelf != shouldActivate)
                 {
@@ -41,7 +38,6 @@ public class ShowGameObjects : MonoBehaviour
         }
     }
 
-    // Метод для увеличения прогресса
     public void IncreaseProgress()
     {
         currentProgress++;
@@ -49,7 +45,6 @@ public class ShowGameObjects : MonoBehaviour
         UpdateGameObjects();
     }
 
-    // Метод для изменения shouldBeActive конкретного объекта
     public void SetObjectActivation(int objectIndex, bool shouldActivate)
     {
         if (objectIndex >= 0 && objectIndex < gameObjectsData.Length)
@@ -64,7 +59,6 @@ public class ShowGameObjects : MonoBehaviour
         }
     }
 
-    // Для отладки в редакторе
     void OnValidate()
     {
         if (Application.isPlaying)

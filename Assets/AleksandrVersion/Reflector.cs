@@ -10,6 +10,7 @@ public class LaserReflector : MonoBehaviour, ILaserSource
     [Header("Visual Settings")]
     public Color reflectionColor = Color.blue;
     public float lineWidth = 0.05f;
+    public Material lineMaterial;
 
     public LineRenderer lineRenderer;
     public bool isActive = false;
@@ -17,6 +18,8 @@ public class LaserReflector : MonoBehaviour, ILaserSource
     public Vector2 incomingDirection;
     [SerializeField] public ILaserSource source;
     public List<LaserReflector> currentChildReflectors = new List<LaserReflector>();
+
+
 
     void Start()
     {
@@ -101,7 +104,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
 
         Vector2 reflectionDirection = CalculateReflectionDirection();
 
-        // Выстреливаем луч из точки попадания
         RaycastHit2D hit = Physics2D.Raycast(reflectionPoint + reflectionDirection * 0.1f, reflectionDirection, 250f);
 
         Vector2 endPoint;
@@ -111,7 +113,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
         {
             endPoint = hit.point;
 
-            // Активируем другие отражатели
             if (hit.collider.CompareTag("Reflector"))
             {
                 LaserReflector otherReflector = hit.collider.GetComponent<LaserReflector>();
@@ -119,12 +120,19 @@ public class LaserReflector : MonoBehaviour, ILaserSource
                 {
                     otherReflector.ActivateReflector(this, hit.point, reflectionDirection, hit.normal);
 
-                    // Сохраняем ссылку на активированный рефлектор
                     if (!currentChildReflectors.Contains(otherReflector))
                     {
                         currentChildReflectors.Add(otherReflector);
                     }
                     hitReflector = true;
+                }
+            }
+            else
+            {
+                DirectionalLaserReceiver receiver = hit.collider.GetComponent<DirectionalLaserReceiver>();
+                if (receiver != null)
+                {
+                    receiver.OnLaserHit(hit.point, reflectionDirection, this);
                 }
             }
         }
@@ -133,7 +141,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
             endPoint = reflectionPoint + reflectionDirection * 250f;
         }
 
-        // Деактивируем рефлекторы, которые больше не попадают под луч
         if (!hitReflector)
         {
             foreach (var reflector in currentChildReflectors)
@@ -146,7 +153,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
             currentChildReflectors.Clear();
         }
 
-        // Обновляем Line Renderer
         lineRenderer.SetPosition(0, reflectionPoint);
         lineRenderer.SetPosition(1, endPoint);
     }
@@ -188,7 +194,15 @@ public class LaserReflector : MonoBehaviour, ILaserSource
             lineRenderer = gameObject.AddComponent<LineRenderer>();
         }
 
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        if (lineMaterial != null)
+        {
+            lineRenderer.material = lineMaterial;
+        }
+        else
+        {
+            lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        }
+
         lineRenderer.startColor = reflectionColor;
         lineRenderer.endColor = reflectionColor;
         lineRenderer.startWidth = lineWidth;

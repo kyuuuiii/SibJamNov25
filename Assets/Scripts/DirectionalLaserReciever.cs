@@ -3,7 +3,7 @@
 public class DirectionalLaserReceiver : MonoBehaviour
 {
     [Header("Receiver Settings")]
-    public Transform detectionPoint; // Дочерний объект для обнаружения луча
+    public Transform detectionPoint;
 
     [Header("Status")]
     public bool isActivated = false;
@@ -23,7 +23,6 @@ public class DirectionalLaserReceiver : MonoBehaviour
         SetupReceiver();
         UpdateVisuals();
 
-        // Автоматически находим ShowGameObjects если не назначен
         if (absoluteSolver == null)
         {
             absoluteSolver = GetComponent<ShowGameObjects>();
@@ -36,22 +35,20 @@ public class DirectionalLaserReceiver : MonoBehaviour
 
     void SetupReceiver()
     {
-        // Автоматически находим дочерний объект если не назначен
+
         if (detectionPoint == null)
         {
             detectionPoint = transform.Find("DetectionPoint");
         }
 
-        // Если дочерний объект не найден, используем текущий объект
         if (detectionPoint == null)
         {
             detectionPoint = transform;
         }
 
-        // Убеждаемся, что есть коллайдер на основном объекте
         if (GetComponent<Collider2D>() == null)
         {
-            Debug.LogWarning($"На объекте {gameObject.name} нет коллайдера! Добавьте Collider2D для работы с лазером.");
+            //Debug.LogWarning($"На объекте {gameObject.name} нет коллайдера! Добавьте Collider2D для работы с лазером.");
         }
 
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -59,12 +56,10 @@ public class DirectionalLaserReceiver : MonoBehaviour
 
     void Update()
     {
-        // Проверяем изменение статуса и передаем в absoluteSolver
         if (isActivated && !wasActivatedLastFrame)
         {
             if (absoluteSolver != null)
             {
-                // Увеличиваем прогресс ТОЛЬКО ЗДЕСЬ
                 absoluteSolver.IncreaseProgress();
                 Debug.Log($"Прогресс увеличен через приемник. Текущий прогресс: {absoluteSolver.currentProgress}");
             }
@@ -97,7 +92,6 @@ public class DirectionalLaserReceiver : MonoBehaviour
         Debug.Log($"{gameObject.name} activated by laser! Прогресс увеличен");
     }
 
-    // Визуализация в редакторе
     void OnDrawGizmosSelected()
     {
         if (detectionPoint != null)
