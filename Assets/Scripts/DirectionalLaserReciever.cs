@@ -3,7 +3,7 @@
 public class DirectionalLaserReceiver : MonoBehaviour
 {
     [Header("Receiver Settings")]
-    public Transform detectionPoint;
+    public Transform detectionPoint; // Дочерний объект для обнаружения луча
 
     [Header("Status")]
     public bool isActivated = false;
@@ -11,11 +11,9 @@ public class DirectionalLaserReceiver : MonoBehaviour
     [Header("Visual Feedback")]
     public Color inactiveColor = Color.gray;
     public Color activeColor = Color.green;
-    public Color blockedColor = Color.red;
 
     [Header("Puzzle Connection")]
-    public ShowGameObjects puzzleController;
-    public int targetObjectIndex = 0;
+    public ShowGameObjects absoluteSolver; // Ссылка на скрипт управления объектами
 
     private SpriteRenderer spriteRenderer;
     private bool wasActivatedLastFrame = false;
@@ -25,28 +23,32 @@ public class DirectionalLaserReceiver : MonoBehaviour
         SetupReceiver();
         UpdateVisuals();
 
-        if (puzzleController == null)
+        // Автоматически находим ShowGameObjects если не назначен
+        if (absoluteSolver == null)
         {
-            puzzleController = GetComponent<ShowGameObjects>();
-            if (puzzleController == null)
+            absoluteSolver = GetComponent<ShowGameObjects>();
+            if (absoluteSolver == null)
             {
-                puzzleController = FindObjectOfType<ShowGameObjects>();
+                absoluteSolver = FindObjectOfType<ShowGameObjects>();
             }
         }
     }
 
     void SetupReceiver()
     {
+        // Автоматически находим дочерний объект если не назначен
         if (detectionPoint == null)
         {
             detectionPoint = transform.Find("DetectionPoint");
         }
 
+        // Если дочерний объект не найден, используем текущий объект
         if (detectionPoint == null)
         {
             detectionPoint = transform;
         }
 
+        // Убеждаемся, что есть коллайдер на основном объекте
         if (GetComponent<Collider2D>() == null)
         {
             Debug.LogWarning($"На объекте {gameObject.name} нет коллайдера! Добавьте Collider2D для работы с лазером.");
@@ -57,64 +59,42 @@ public class DirectionalLaserReceiver : MonoBehaviour
 
     void Update()
     {
-        if (isActivated != wasActivatedLastFrame)
+        // Проверяем изменение статуса и передаем в absoluteSolver
+        if (isActivated && !wasActivatedLastFrame)
         {
-            if (isActivated)
+            if (absoluteSolver != null)
             {
-                if (puzzleController != null)
-                {
-                    // Пытаемся активировать объект (проверка условий внутри ShowGameObjects)
-                    puzzleController.SetObjectActivation(targetObjectIndex, true);
-                }
-
-                OnActivated();
-            }
-            else
-            {
-                OnDeactivated();
+                // Увеличиваем прогресс ТОЛЬКО ЗДЕСЬ
+                absoluteSolver.IncreaseProgress();
+                Debug.Log($"Прогресс увеличен через приемник. Текущий прогресс: {absoluteSolver.currentProgress}");
             }
 
             UpdateVisuals();
+            OnActivated();
         }
 
         wasActivatedLastFrame = isActivated;
+
         isActivated = false;
     }
 
-    // Вызывается когда луч попадает в коллайдер
     public void OnLaserHit(Vector2 hitPoint, Vector2 laserDirection, ILaserSource source)
     {
         isActivated = true;
+        Debug.Log("Луч попал в приемник!");
     }
 
     private void UpdateVisuals()
     {
         if (spriteRenderer != null)
         {
-            // Проверяем статус объекта для визуальной обратной связи
-            if (puzzleController != null && puzzleController.HasObjectBeenActivated(targetObjectIndex))
-            {
-                spriteRenderer.color = activeColor; // Уже активирован
-            }
-            else if (puzzleController != null && puzzleController.GetObjectActivationState(targetObjectIndex))
-            {
-                spriteRenderer.color = activeColor; // Активен сейчас
-            }
-            else
-            {
-                spriteRenderer.color = inactiveColor; // Не активен
-            }
+            spriteRenderer.color = isActivated ? activeColor : inactiveColor;
         }
     }
 
     private void OnActivated()
     {
-        Debug.Log($"{gameObject.name} получил луч. Целевой объект: {targetObjectIndex}");
-    }
-
-    private void OnDeactivated()
-    {
-        // Debug.Log($"{gameObject.name} деактивирован");
+        Debug.Log($"{gameObject.name} activated by laser! Прогресс увеличен");
     }
 
     // Визуализация в редакторе
@@ -122,32 +102,15 @@ public class DirectionalLaserReceiver : MonoBehaviour
     {
         if (detectionPoint != null)
         {
-            // Разный цвет в зависимости от статуса
-            if (puzzleController != null && puzzleController.HasObjectBeenActivated(targetObjectIndex))
-            {
-                Gizmos.color = Color.green; // Уже активирован
-            }
-            else if (puzzleController != null && puzzleController.GetObjectActivationState(targetObjectIndex))
-            {
-                Gizmos.color = Color.blue; // Активен сейчас
-            }
-            else
-            {
-                Gizmos.color = Color.yellow; // Не активен
-            }
-
+            Gizmos.color = isActivated ? Color.green : Color.yellow;
             Gizmos.DrawWireSphere(detectionPoint.position, 0.1f);
 
+            // Рисуем значок прицела
             Gizmos.color = Color.white;
             Vector3 center = detectionPoint.position;
             float size = 0.15f;
             Gizmos.DrawLine(center + Vector3.left * size, center + Vector3.right * size);
             Gizmos.DrawLine(center + Vector3.up * size, center + Vector3.down * size);
-
-#if UNITY_EDITOR
-            string status = puzzleController != null && puzzleController.HasObjectBeenActivated(targetObjectIndex) ? "✓" : "";
-            UnityEditor.Handles.Label(detectionPoint.position + Vector3.up * 0.3f, $"Target: {targetObjectIndex} {status}");
-#endif
         }
     }
 }
