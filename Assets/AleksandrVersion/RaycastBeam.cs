@@ -45,44 +45,54 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
     UpdateLineRenderer();
   }
 
-  void ShootRaycast2D()
-  {
-    DeactivateAllReflectors();
-
-    Vector2 direction = transform.right;
-    RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, layerMask);
-
-    currentFrameReflectors.Clear();
-
-    if (hit.collider != null)
+    void ShootRaycast2D()
     {
-      hitPoint = hit.point;
+        DeactivateAllReflectors();
 
-      if (hit.collider.CompareTag(reflectorTag))
-      {
-        LaserReflector reflector = hit.collider.GetComponent<LaserReflector>();
-        if (reflector != null)
+        Vector2 direction = transform.right;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, layerMask);
+
+        currentFrameReflectors.Clear();
+
+        if (hit.collider != null)
         {
-          reflector.ActivateReflector(this, hit.point, direction, hit.normal);
-          currentFrameReflectors.Add(reflector);
-          hasHit = true;
+            hitPoint = hit.point;
+
+            if (hit.collider.CompareTag(reflectorTag))
+            {
+                LaserReflector reflector = hit.collider.GetComponent<LaserReflector>();
+                if (reflector != null)
+                {
+                    reflector.ActivateReflector(this, hit.point, direction, hit.normal);
+                    currentFrameReflectors.Add(reflector);
+                    hasHit = true;
+                }
+            }
+            else
+            {
+                // Проверяем все возможные приемники
+                SimpleLaserReceiver receiver = hit.collider.GetComponent<SimpleLaserReceiver>();
+                if (receiver != null)
+                {
+                    receiver.OnLaserHit(hit.point, direction, this);
+                    hasHit = true;
+                }
+                else if (hit.collider.CompareTag(targetTag))
+                {
+                    hasHit = true;
+                }
+                else
+                {
+                    hasHit = false;
+                }
+            }
         }
-      }
-      else if (hit.collider.CompareTag(targetTag))
-      {
-        hasHit = true;
-      }
-      else
-      {
-        hasHit = false;
-      }
+        else
+        {
+            hitPoint = transform.position + (Vector3)direction * rayDistance;
+            hasHit = false;
+        }
     }
-    else
-    {
-      hitPoint = transform.position + (Vector3)direction * rayDistance;
-      hasHit = false;
-    }
-  }
 
     void DeactivateAllReflectors()
     {
