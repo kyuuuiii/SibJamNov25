@@ -37,10 +37,8 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
 
   void Update()
   {
-    // Сначала деактивируем все рефлекторы, которые были активны в предыдущем кадре
     //DeactivateAllReflectors();
 
-    // Затем выполняем новый raycast
     ShootRaycast2D();
     UpdateLineRenderer();
   }
@@ -70,8 +68,7 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
             }
             else
             {
-                // Проверяем все возможные приемники
-                SimpleLaserReceiver receiver = hit.collider.GetComponent<SimpleLaserReceiver>();
+                DirectionalLaserReceiver receiver = hit.collider.GetComponent<DirectionalLaserReceiver>();
                 if (receiver != null)
                 {
                     receiver.OnLaserHit(hit.point, direction, this);
@@ -155,7 +152,6 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
 #endif
   }
 
-  // Реализация интерфейса ILaserSource
   public bool IsSourceActive()
   {
     return isActiveAndEnabled;
@@ -180,7 +176,6 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
   }
 }
 
-// Интерфейс для всех источников лазера
 public interface ILaserSource
 {
   bool IsSourceActive();

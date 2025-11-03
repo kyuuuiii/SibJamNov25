@@ -1,9 +1,9 @@
-using UnityEngine;
+п»їusing UnityEngine;
 
-public class SimpleLaserReceiver : MonoBehaviour
+public class DirectionalLaserReceiver : MonoBehaviour
 {
     [Header("Receiver Settings")]
-    public Transform detectionPoint; // Дочерний объект для обнаружения луча
+    public Transform detectionPoint;
 
     [Header("Status")]
     public bool isActivated = false;
@@ -11,33 +11,45 @@ public class SimpleLaserReceiver : MonoBehaviour
     [Header("Visual Feedback")]
     public Color inactiveColor = Color.gray;
     public Color activeColor = Color.green;
+    public Color blockedColor = Color.red;
+
+    [Header("Puzzle Connection")]
+    public ShowGameObjects puzzleController;
+    public int targetObjectIndex = 0;
 
     private SpriteRenderer spriteRenderer;
+    private bool wasActivatedLastFrame = false;
 
     void Start()
     {
         SetupReceiver();
         UpdateVisuals();
+
+        if (puzzleController == null)
+        {
+            puzzleController = GetComponent<ShowGameObjects>();
+            if (puzzleController == null)
+            {
+                puzzleController = FindObjectOfType<ShowGameObjects>();
+            }
+        }
     }
 
     void SetupReceiver()
     {
-        // Автоматически находим дочерний объект если не назначен
         if (detectionPoint == null)
         {
             detectionPoint = transform.Find("DetectionPoint");
         }
 
-        // Если дочерний объект не найден, используем текущий объект
         if (detectionPoint == null)
         {
             detectionPoint = transform;
         }
 
-        // Убеждаемся, что есть коллайдер на основном объекте
         if (GetComponent<Collider2D>() == null)
         {
-            Debug.LogWarning($"На объекте {gameObject.name} нет коллайдера! Добавьте Collider2D для работы с лазером.");
+            Debug.LogWarning($"РќР° РѕР±СЉРµРєС‚Рµ {gameObject.name} РЅРµС‚ РєРѕР»Р»Р°Р№РґРµСЂР°! Р”РѕР±Р°РІСЊС‚Рµ Collider2D РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Р»Р°Р·РµСЂРѕРј.");
         }
 
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -45,60 +57,97 @@ public class SimpleLaserReceiver : MonoBehaviour
 
     void Update()
     {
-        // Сбрасываем статус каждый кадр, будет установлен при попадании луча
-        bool wasActivated = isActivated;
-        isActivated = false;
-
-        // Обновляем визуал если статус изменился
-        if (wasActivated && !isActivated)
+        if (isActivated != wasActivatedLastFrame)
         {
+            if (isActivated)
+            {
+                if (puzzleController != null)
+                {
+                    // РџС‹С‚Р°РµРјСЃСЏ Р°РєС‚РёРІРёСЂРѕРІР°С‚СЊ РѕР±СЉРµРєС‚ (РїСЂРѕРІРµСЂРєР° СѓСЃР»РѕРІРёР№ РІРЅСѓС‚СЂРё ShowGameObjects)
+                    puzzleController.SetObjectActivation(targetObjectIndex, true);
+                }
+
+                OnActivated();
+            }
+            else
+            {
+                OnDeactivated();
+            }
+
             UpdateVisuals();
-            OnDeactivated();
         }
+
+        wasActivatedLastFrame = isActivated;
+        isActivated = false;
     }
 
-    // Вызывается когда луч попадает в коллайдер
+    // Р’С‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° Р»СѓС‡ РїРѕРїР°РґР°РµС‚ РІ РєРѕР»Р»Р°Р№РґРµСЂ
     public void OnLaserHit(Vector2 hitPoint, Vector2 laserDirection, ILaserSource source)
     {
         isActivated = true;
-        UpdateVisuals();
-        OnActivated();
     }
 
     private void UpdateVisuals()
     {
         if (spriteRenderer != null)
         {
-            spriteRenderer.color = isActivated ? activeColor : inactiveColor;
+            // РџСЂРѕРІРµСЂСЏРµРј СЃС‚Р°С‚СѓСЃ РѕР±СЉРµРєС‚Р° РґР»СЏ РІРёР·СѓР°Р»СЊРЅРѕР№ РѕР±СЂР°С‚РЅРѕР№ СЃРІСЏР·Рё
+            if (puzzleController != null && puzzleController.HasObjectBeenActivated(targetObjectIndex))
+            {
+                spriteRenderer.color = activeColor; // РЈР¶Рµ Р°РєС‚РёРІРёСЂРѕРІР°РЅ
+            }
+            else if (puzzleController != null && puzzleController.GetObjectActivationState(targetObjectIndex))
+            {
+                spriteRenderer.color = activeColor; // РђРєС‚РёРІРµРЅ СЃРµР№С‡Р°СЃ
+            }
+            else
+            {
+                spriteRenderer.color = inactiveColor; // РќРµ Р°РєС‚РёРІРµРЅ
+            }
         }
     }
 
     private void OnActivated()
     {
-        // Действия при активации
-        // Debug.Log($"{gameObject.name} activated by laser!");
+        Debug.Log($"{gameObject.name} РїРѕР»СѓС‡РёР» Р»СѓС‡. Р¦РµР»РµРІРѕР№ РѕР±СЉРµРєС‚: {targetObjectIndex}");
     }
 
     private void OnDeactivated()
     {
-        // Действия при деактивации
-        // Debug.Log($"{gameObject.name} deactivated");
+        // Debug.Log($"{gameObject.name} РґРµР°РєС‚РёРІРёСЂРѕРІР°РЅ");
     }
 
-    // Визуализация в редакторе
+    // Р’РёР·СѓР°Р»РёР·Р°С†РёСЏ РІ СЂРµРґР°РєС‚РѕСЂРµ
     void OnDrawGizmosSelected()
     {
         if (detectionPoint != null)
         {
-            Gizmos.color = isActivated ? Color.green : Color.yellow;
+            // Р Р°Р·РЅС‹Р№ С†РІРµС‚ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЃС‚Р°С‚СѓСЃР°
+            if (puzzleController != null && puzzleController.HasObjectBeenActivated(targetObjectIndex))
+            {
+                Gizmos.color = Color.green; // РЈР¶Рµ Р°РєС‚РёРІРёСЂРѕРІР°РЅ
+            }
+            else if (puzzleController != null && puzzleController.GetObjectActivationState(targetObjectIndex))
+            {
+                Gizmos.color = Color.blue; // РђРєС‚РёРІРµРЅ СЃРµР№С‡Р°СЃ
+            }
+            else
+            {
+                Gizmos.color = Color.yellow; // РќРµ Р°РєС‚РёРІРµРЅ
+            }
+
             Gizmos.DrawWireSphere(detectionPoint.position, 0.1f);
 
-            // Рисуем значок прицела
             Gizmos.color = Color.white;
             Vector3 center = detectionPoint.position;
             float size = 0.15f;
             Gizmos.DrawLine(center + Vector3.left * size, center + Vector3.right * size);
             Gizmos.DrawLine(center + Vector3.up * size, center + Vector3.down * size);
+
+#if UNITY_EDITOR
+            string status = puzzleController != null && puzzleController.HasObjectBeenActivated(targetObjectIndex) ? "вњ“" : "";
+            UnityEditor.Handles.Label(detectionPoint.position + Vector3.up * 0.3f, $"Target: {targetObjectIndex} {status}");
+#endif
         }
     }
 }

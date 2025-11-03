@@ -170,6 +170,7 @@ GameObject:
   - component: {fileID: 5164795540822884533}
   - component: {fileID: 7792619424249782314}
   - component: {fileID: 7197930848112397209}
+  - component: {fileID: 6247410232033475594}
   m_Layer: 0
   m_Name: Reciever
   m_TagString: Part
@@ -309,3 +310,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6d431cffd45cb944b539a92acc9c719, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GuaranteedSingleDrag
+--- !u!114 &6247410232033475594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6820409598042524127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78c999743ec444d41844c4ffb762d4ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShowGameObjects
+  gameObject: {fileID: 0}
+  isSolved: 0
