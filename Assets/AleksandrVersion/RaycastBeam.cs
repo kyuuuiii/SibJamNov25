@@ -38,7 +38,7 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
   void Update()
   {
     // Сначала деактивируем все рефлекторы, которые были активны в предыдущем кадре
-    DeactivateAllReflectors();
+    //DeactivateAllReflectors();
 
     // Затем выполняем новый raycast
     ShootRaycast2D();
@@ -47,6 +47,8 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
 
   void ShootRaycast2D()
   {
+    DeactivateAllReflectors();
+
     Vector2 direction = transform.right;
     RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, rayDistance, layerMask);
 
@@ -82,19 +84,19 @@ public class RaycastBeam2D : MonoBehaviour, ILaserSource
     }
   }
 
-  void DeactivateAllReflectors()
-  {
-    // Деактивируем все рефлекторы, которые не попали под луч в этом кадре
-    foreach (var reflector in FindObjectsOfType<LaserReflector>())
+    void DeactivateAllReflectors()
     {
-      if (!currentFrameReflectors.Contains(reflector))
-      {
-        reflector.DeactivateReflector();
-      }
+        foreach (var reflector in currentFrameReflectors)
+        {
+            if (reflector != null)
+            {
+                reflector.DeactivateReflector();
+            }
+        }
+        currentFrameReflectors.Clear();
     }
-  }
 
-  void UpdateLineRenderer()
+    void UpdateLineRenderer()
   {
     if (lineRenderer == null) return;
 

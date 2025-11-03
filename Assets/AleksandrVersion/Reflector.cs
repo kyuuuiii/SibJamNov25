@@ -69,7 +69,6 @@ public class LaserReflector : MonoBehaviour, ILaserSource
             lineRenderer.enabled = true;
         }
 
-        // Добавляем этот вызов
         UpdateReflectionBeam();
     }
 
@@ -224,4 +223,5 @@ public class LaserReflector : MonoBehaviour, ILaserSource
             Gizmos.DrawRay(reflectionPoint, reflectionDir * 2f);
         }
     }
+
 }
