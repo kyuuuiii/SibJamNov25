@@ -5,6 +5,8 @@ public class Buttons : MonoBehaviour
 {
     public GameObject settingsPanel;
     public GameObject menuPanel;
+    //public int sceneNumber;
+    public GameObject canvas;
     void Start()
     {
         
@@ -42,5 +44,10 @@ public class Buttons : MonoBehaviour
     {
         string currentSceneName = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene(currentSceneName);
+    }
+    public void AnySceneLoader(int sceneNumber)
+    {
+        canvas.SetActive(false);
+        SceneManager.LoadScene(sceneNumber);
     }
 }

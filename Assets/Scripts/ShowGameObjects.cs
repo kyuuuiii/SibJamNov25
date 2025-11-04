@@ -15,6 +15,7 @@ public class ShowGameObjects : MonoBehaviour
 
     void Start()
     {
+        ForceHideAllObjects();
         UpdateGameObjects();
     }
 
@@ -57,6 +58,18 @@ public class ShowGameObjects : MonoBehaviour
         {
             Debug.LogWarning($"Неверный индекс объекта: {objectIndex}. Допустимый диапазон: 0-{gameObjectsData.Length - 1}");
         }
+    }
+
+    private void ForceHideAllObjects()
+    {
+        foreach (GameObjectData data in gameObjectsData)
+        {
+            if (data.gameObject != null)
+            {
+                data.gameObject.SetActive(false);
+            }
+        }
+        Debug.Log("Все объекты принудительно скрыты при старте сцены");
     }
 
     void OnValidate()
