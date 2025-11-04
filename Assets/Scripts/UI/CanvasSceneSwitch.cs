@@ -5,6 +5,13 @@ using UnityEngine.SceneManagement;
 
 public class CanvasSceneSwitch : MonoBehaviour
 {
+    public enum SwitchMode
+    {
+        Instant,
+        Fade
+    }
+
+    public SwitchMode switchMode = SwitchMode.Fade;
     public float fadeSpeed = 1f;
     public int sceneNumber = 0;
     private CanvasGroup canvasGroup;
@@ -23,19 +30,29 @@ public class CanvasSceneSwitch : MonoBehaviour
 
     IEnumerator FadeAndSwitchScene()
     {
-        float timer = 0f;
-
-        while (timer < 1f)
+        if (switchMode == SwitchMode.Instant)
         {
-            timer += Time.deltaTime * fadeSpeed;
-            canvasGroup.alpha = Mathf.Clamp01(timer);
+            canvasGroup.alpha = 1f;
             yield return null;
+            SceneManager.LoadScene(sceneNumber);
+            yield break; 
         }
+        else
+        {
+            float timer = 0f;
 
-        canvasGroup.alpha = 1f;
+            while (timer < 1f)
+            {
+                timer += Time.deltaTime * fadeSpeed;
+                canvasGroup.alpha = Mathf.Clamp01(timer);
+                yield return null;
+            }
 
-        yield return new WaitForSeconds(1f);
+            canvasGroup.alpha = 1f;
 
-        SceneManager.LoadScene(sceneNumber);
+            yield return new WaitForSeconds(1f);
+
+            SceneManager.LoadScene(sceneNumber);
+        }
     }
 }

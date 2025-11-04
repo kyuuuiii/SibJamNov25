@@ -156,8 +156,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SimpleLaserReceiver
   detectionPoint: {fileID: 224264903512870841}
   isActivated: 0
-  inactiveColor: {r: 0.010693753, g: 0, b: 0.2754717, a: 1}
+  inactiveColor: {r: 1, g: 1, b: 1, a: 1}
   activeColor: {r: 0, g: 1, b: 0.93443036, a: 1}
+  absoluteSolver: {fileID: 0}
 --- !u!1 &6820409598042524127
 GameObject:
   m_ObjectHideFlags: 0
@@ -310,6 +311,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6d431cffd45cb944b539a92acc9c719, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GuaranteedSingleDrag
+  minDistance: 1
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &6247410232033475594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -322,5 +327,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78c999743ec444d41844c4ffb762d4ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShowGameObjects
-  gameObject: {fileID: 0}
-  isSolved: 0
+  gameObjectsData: []
+  currentProgress: 0

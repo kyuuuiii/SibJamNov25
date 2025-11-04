@@ -4,8 +4,18 @@ using UnityEngine.UI;
 
 public class CanvasAutoDestroy : MonoBehaviour
 {
+    public enum DestroyMode
+    {
+        Self,
+        Target,
+        Both
+    }
+
+    public DestroyMode destroyMode = DestroyMode.Self;
+    public GameObject targetObject;
     public float lifetime = 3f;
     public float fadeSpeed = 1f;
+
     private CanvasGroup canvasGroup;
 
     void Start()
@@ -44,6 +54,42 @@ public class CanvasAutoDestroy : MonoBehaviour
         }
 
         canvasGroup.alpha = 0f;
-        Destroy(gameObject);
+
+        switch (destroyMode)
+        {
+            case DestroyMode.Self:
+                Destroy(gameObject);
+                break;
+
+            case DestroyMode.Target:
+                if (targetObject != null)
+                {
+                    Destroy(targetObject);
+                }
+                else
+                {
+                    Debug.LogWarning("Target object is not assigned in CanvasAutoDestroy script!");
+                    Destroy(gameObject);
+                }
+                break;
+
+            case DestroyMode.Both:
+                if (targetObject != null)
+                {
+                    Destroy(targetObject);
+                }
+                Destroy(gameObject);
+                break;
+        }
+    }
+
+    public void SetTarget(GameObject newTarget)
+    {
+        targetObject = newTarget;
+    }
+
+    public void SetDestroyMode(DestroyMode newMode)
+    {
+        destroyMode = newMode;
     }
 }
